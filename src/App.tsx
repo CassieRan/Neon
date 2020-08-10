@@ -4,6 +4,7 @@ import './App.css'
 import ColorThief from 'colorthief'
 import { copyToClipbord, toRgb, toHex } from './utils'
 import { drawGrid, drawCenter } from './canvas'
+import Loading from './components/Loading/index'
 
 interface Props {}
 interface State {
@@ -14,7 +15,7 @@ interface State {
     location: Location
     showMagnifier: boolean,
     selectColor: number[] | null,
-    canvas: Size
+    canvas: Size,
 }
 interface Location {
     x: number
@@ -47,7 +48,7 @@ export default class App extends React.Component<Props, State> {
             location: { x: 0, y: 0 },
             showMagnifier: false,
             selectColor: null,
-            canvas: {w:345, h:345}
+            canvas: {w:345, h:345},
         }
         this.choose = this.choose.bind(this)
         this.getPalette = this.getPalette.bind(this)
@@ -98,9 +99,11 @@ export default class App extends React.Component<Props, State> {
         })
     }
     loadImg() {
+        Loading.start()
         App.img.onload = () => {
             this.drawImage()
             this.getPalette()
+            Loading.end()
         }
         App.img.src = this.state.imgSrc
     }
