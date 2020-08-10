@@ -13,11 +13,16 @@ interface State {
     dominantColor: [number, number, number]
     location: Location
     showMagnifier: boolean,
-    selectColor: number[] | null
+    selectColor: number[] | null,
+    canvas: Size
 }
 interface Location {
     x: number
     y: number
+}
+interface Size {
+    w: number
+    h: number
 }
 enum ColorMode {
     RGB = 'rgb',
@@ -37,11 +42,12 @@ export default class App extends React.Component<Props, State> {
         this.state = {
             imgSrc: '',
             colors: [],
-            colorMode: ColorMode.RGB,
+            colorMode: ColorMode.HEX,
             dominantColor: [255, 255, 255],
             location: { x: 0, y: 0 },
             showMagnifier: false,
-            selectColor: null
+            selectColor: null,
+            canvas: {w:345, h:345}
         }
         this.choose = this.choose.bind(this)
         this.getPalette = this.getPalette.bind(this)
@@ -70,8 +76,8 @@ export default class App extends React.Component<Props, State> {
         this.setState({ colors, dominantColor })
     }
     drawImage() {
-        const canvas = document.querySelector('#img')
-        const ctx = (canvas as HTMLCanvasElement).getContext('2d')
+        const canvas = document.querySelector('#img') as HTMLCanvasElement
+        const ctx = canvas.getContext('2d')
 
         let width, height
         if (App.img.width > App.img.height) {
@@ -81,9 +87,15 @@ export default class App extends React.Component<Props, State> {
             height = 345
             width = (345 * App.img.width) / App.img.height
         }
-        ;(canvas as HTMLCanvasElement).width = width
-        ;(canvas as HTMLCanvasElement).height = height
+        canvas.width = width
+        canvas.height = height
         ctx?.drawImage(App.img, 0, 0, width, height)
+        this.setState({
+            canvas: {
+                w: width,
+                h: height
+            }
+        })
     }
     loadImg() {
         App.img.onload = () => {
@@ -191,10 +203,12 @@ export default class App extends React.Component<Props, State> {
             }
         )
         const cardBackgroudStyle = {
-            backgroundColor: toRgb(this.state.dominantColor),
+            width: this.state.canvas.w,
+            height: this.state.canvas.h,
+            // backgroundColor: toRgb(this.state.dominantColor)
         }
         const magnifierStyle = {
-            transform: `translate3d(${this.state.location.x}px, ${this.state.location.y}px, 0)`,
+            transform: `translate3d(${this.state.canvas.w-this.state.location.x<App.magnifier.w?this.state.location.x-App.magnifier.w:this.state.location.x}px, ${this.state.canvas.h-this.state.location.y<App.magnifier.h?this.state.location.y-App.magnifier.h:this.state.location.y}px, 0)`,
         }
         const selectColorBlockStyle = {
             backgroundColor: this.state.selectColor?toRgb(this.state.selectColor):'none'
