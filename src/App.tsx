@@ -71,6 +71,7 @@ export default class App extends React.Component<Props, State> {
         this.setState(
             {
                 imgSrc: files && files[0] && URL.createObjectURL(files[0]),
+                showMagnifier: false
             },
             this.loadImg
         )
