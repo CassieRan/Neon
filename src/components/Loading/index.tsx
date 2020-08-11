@@ -5,12 +5,12 @@ import ReactDOM from 'react-dom'
 export default abstract class Loading {
     static div: HTMLElement
     static render(): void {
-        Loading.div = document.createElement('div')
-        document.body.appendChild(Loading.div)
-        ReactDOM.render(<LoadingUI />, Loading.div)
+        this.div = document.createElement('div')
+        document.body.appendChild(this.div)
+        ReactDOM.render(<LoadingUI />, this.div)
     }
     static start(): void {
-        Loading.render()
+        this.render()
     }
     static end(): void {
         ReactDOM.unmountComponentAtNode(this.div)
