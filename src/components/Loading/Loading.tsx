@@ -1,5 +1,6 @@
 import React from 'react'
 import './Loading.css'
+import ZIndex from '../ZIndex/index'
 
 export default function Loading({ color = '#7f58af', size = 80 }) {
     const circles = [...Array(12)].map((_, index) => (
@@ -13,7 +14,7 @@ export default function Loading({ color = '#7f58af', size = 80 }) {
         />
     ))
     return (
-        <div className="mask">
+        <div className="mask" style={{zIndex: ZIndex.gen()}}>
             <div className="loading" style={{ height: size, width: size }}>
                 {circles}
             </div>
