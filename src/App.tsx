@@ -39,6 +39,7 @@ export default class App extends React.Component<Props, State> {
         h: 110,
     }
     static ratio: number = 10 // 放大镜倍数
+    static canvasSize: number = Number(((345 / 375) * window.screen.width).toFixed(0))
     constructor(props: Props) {
         super(props)
         this.state = {
@@ -49,7 +50,7 @@ export default class App extends React.Component<Props, State> {
             location: { x: 0, y: 0 },
             showMagnifier: false,
             selectColor: null,
-            canvas: { w: 345, h: 345 },
+            canvas: { w: App.canvasSize, h: App.canvasSize },
         }
         this.choose = this.choose.bind(this)
         this.getPalette = this.getPalette.bind(this)
@@ -85,11 +86,11 @@ export default class App extends React.Component<Props, State> {
 
         let width, height
         if (App.img.width > App.img.height) {
-            width = 345
-            height = (345 * App.img.height) / App.img.width
+            width = App.canvasSize
+            height = (App.canvasSize * App.img.height) / App.img.width
         } else {
-            height = 345
-            width = (345 * App.img.width) / App.img.height
+            height = App.canvasSize
+            width = (App.canvasSize * App.img.width) / App.img.height
         }
         canvas.width = width
         canvas.height = height
