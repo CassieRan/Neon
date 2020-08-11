@@ -1,46 +1,34 @@
 import React from 'react'
 import ReactDom from 'react-dom'
 import ToastUI from './Toast'
-import { type } from 'os'
+import Queue from './Queue'
 
-interface ToastItem {
-    content: string
+class Toast {
+    msg: string
     duration: number
+    constructor(msg: string, duration: number) {
+        this.msg = msg
+        this.duration = duration
+    }
+    handler(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const div = document.createElement('div')
+            document.body.appendChild(div)
+            ReactDom.render(<ToastUI content={this.msg} />, div)
+            setTimeout(() => {
+                ReactDom.unmountComponentAtNode(div)
+                document.body.removeChild(div)
+                resolve()
+            }, this.duration)
+        })
+    }
 }
 
-interface ToastController {
-    status: 'finnal' | 'pending'
-    stack: ToastItem[]
-    add: (item: ToastItem) => void
-    remove: () => ToastItem,
-    next: ()=>void
+abstract class ToastController {
+    static queue = new Queue<Toast>()
+    static main(msg: string, duration = 2000) {
+        ToastController.queue.push(new Toast(msg, duration))
+    }
 }
 
-let toastController: ToastController = {
-    status: 'finnal',
-    stack: [],
-    add(item: ToastItem) {
-        this.stack.push(item)
-        if (this.status === 'finnal' && this.stack.length > 0) this.next()
-    },
-    remove() {
-        if(this.stack.length) return this.stack.shift()
-    },
-    next() {
-        if (this.stack.length <= 0) return (this.status = 'finnal')
-        this.status = 'pending'
-        const item = this.removeToast()
-        const div = document.createElement('div')
-        document.body.appendChild(div)
-        ReactDom.render(<ToastUI content={item.content} />, div)
-        setTimeout(() => {
-            ReactDom.unmountComponentAtNode(div)
-            document.body.removeChild(div)
-            this.next()
-        }, item.duration)
-    },
-}
-
-export default function toast(content: string, duration = 2000) {
-    toastController.add({ content, duration })
-}
+export default ToastController.main

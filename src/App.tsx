@@ -5,6 +5,7 @@ import ColorThief from 'colorthief'
 import { copyToClipbord, toRgb, toHex } from './utils'
 import { drawGrid, drawCenter } from './canvas'
 import Loading from './components/Loading/index'
+import Toast from './components/Toast/index'
 
 interface Props {}
 interface State {
@@ -13,9 +14,9 @@ interface State {
     colorMode: ColorMode
     dominantColor: [number, number, number]
     location: Location
-    showMagnifier: boolean,
-    selectColor: number[] | null,
-    canvas: Size,
+    showMagnifier: boolean
+    selectColor: number[] | null
+    canvas: Size
 }
 interface Location {
     x: number
@@ -48,7 +49,7 @@ export default class App extends React.Component<Props, State> {
             location: { x: 0, y: 0 },
             showMagnifier: false,
             selectColor: null,
-            canvas: {w:345, h:345},
+            canvas: { w: 345, h: 345 },
         }
         this.choose = this.choose.bind(this)
         this.getPalette = this.getPalette.bind(this)
@@ -61,6 +62,8 @@ export default class App extends React.Component<Props, State> {
         this.drawMagnifier = this.drawMagnifier.bind(this)
     }
 
+    componentDidMount() {}
+
     choose(e: React.ChangeEvent<HTMLInputElement>) {
         const files = e.target.files
         if (!files || !files[0]) return
@@ -72,7 +75,7 @@ export default class App extends React.Component<Props, State> {
         )
     }
     async getPalette() {
-        const colors = await App.colorThief.getPalette(App.img,5)
+        const colors = await App.colorThief.getPalette(App.img, 5)
         const dominantColor = await App.colorThief.getColor(App.img)
         this.setState({ colors, dominantColor })
     }
@@ -94,8 +97,8 @@ export default class App extends React.Component<Props, State> {
         this.setState({
             canvas: {
                 w: width,
-                h: height
-            }
+                h: height,
+            },
         })
     }
     loadImg() {
@@ -148,6 +151,7 @@ export default class App extends React.Component<Props, State> {
                 throw new Error('illegal color mode')
         }
         copyToClipbord(content)
+        Toast(`已复制${content}到剪贴板`)
     }
     touchStartHandler(e: React.TouchEvent) {
         // 点击图像出现放大镜
@@ -181,10 +185,15 @@ export default class App extends React.Component<Props, State> {
     touchEndHandler(e: React.TouchEvent) {
         const imgElement = document.querySelector('#img') as HTMLCanvasElement
         const ctx = imgElement.getContext('2d') as CanvasRenderingContext2D
-        const color = ctx.getImageData(this.state.location.x, this.state.location.y, 1,1).data
-        const [r,g,b]= color
+        const color = ctx.getImageData(
+            this.state.location.x,
+            this.state.location.y,
+            1,
+            1
+        ).data
+        const [r, g, b] = color
         this.setState({
-            selectColor: [r,g,b]
+            selectColor: [r, g, b],
         })
     }
     render() {
@@ -211,17 +220,40 @@ export default class App extends React.Component<Props, State> {
             // backgroundColor: toRgb(this.state.dominantColor)
         }
         const magnifierStyle = {
-            transform: `translate3d(${this.state.canvas.w-this.state.location.x<App.magnifier.w?this.state.location.x-App.magnifier.w:this.state.location.x}px, ${this.state.canvas.h-this.state.location.y<App.magnifier.h?this.state.location.y-App.magnifier.h:this.state.location.y}px, 0)`,
+            transform: `translate3d(${
+                this.state.canvas.w - this.state.location.x < App.magnifier.w
+                    ? this.state.location.x - App.magnifier.w
+                    : this.state.location.x
+            }px, ${
+                this.state.canvas.h - this.state.location.y < App.magnifier.h
+                    ? this.state.location.y - App.magnifier.h
+                    : this.state.location.y
+            }px, 0)`,
         }
         const selectColorBlockStyle = {
-            backgroundColor: this.state.selectColor?toRgb(this.state.selectColor):'none'
+            backgroundColor: this.state.selectColor
+                ? toRgb(this.state.selectColor)
+                : 'none',
         }
         return (
             <div className="App">
-                {this.state.selectColor&&<div className="select-color">
-                    <div className="color-block" style={selectColorBlockStyle}></div>
-                    <span className="color-value">{toHex(this.state.selectColor)}</span>
-                </div>}
+                {this.state.selectColor && (
+                    <div
+                        className="select-color"
+                        onClick={this.clickPaletteItemHandler.bind(
+                            this,
+                            this.state.selectColor
+                        )}
+                    >
+                        <div
+                            className="color-block"
+                            style={selectColorBlockStyle}
+                        ></div>
+                        <span className="color-value">
+                            {toHex(this.state.selectColor)}
+                        </span>
+                    </div>
+                )}
                 <div className="picture" style={cardBackgroudStyle}>
                     {this.state.imgSrc ? (
                         <canvas
@@ -263,5 +295,3 @@ export default class App extends React.Component<Props, State> {
         )
     }
 }
-
-

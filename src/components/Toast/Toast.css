@@ -1,10 +1,15 @@
 
 .toast {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate3d(-50%, -50%, 0);
-    padding: 10px;
-    border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.7);
+    min-width: 100px;
+    max-width: 345px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
 }
