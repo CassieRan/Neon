@@ -2,7 +2,7 @@ import React from 'react'
 import './App.css'
 /// <reference path="./type.d.ts" />
 import ColorThief from 'colorthief'
-import { copyToClipbord, toRgb, toHex } from './utils'
+import { copyToClipbord, toRgb, toHex, isMobile } from './utils'
 import { drawGrid, drawCenter } from './canvas'
 import Loading from './components/Loading/index'
 import Toast from './components/Toast/index'
@@ -39,7 +39,9 @@ export default class App extends React.Component<Props, State> {
         h: 110,
     }
     static ratio: number = 10 // 放大镜倍数
-    static canvasSize: number = Number(((345 / 375) * window.screen.width).toFixed(0))
+    static canvasSize: number = Number(
+        ((345 / 375) * document.body.clientWidth).toFixed(0)
+    )
     constructor(props: Props) {
         super(props)
         this.state = {
@@ -71,7 +73,8 @@ export default class App extends React.Component<Props, State> {
         this.setState(
             {
                 imgSrc: files && files[0] && URL.createObjectURL(files[0]),
-                showMagnifier: false
+                showMagnifier: false,
+                selectColor: null
             },
             this.loadImg
         )
@@ -155,28 +158,21 @@ export default class App extends React.Component<Props, State> {
         copyToClipbord(content)
         Toast(`已复制${content}到剪贴板`)
     }
-    touchStartHandler(e: React.TouchEvent) {
+    touchStartHandler(e: React.TouchEvent | React.MouseEvent) {
         // 点击图像出现放大镜
         this.setState({ showMagnifier: true })
         const imgElement = document.querySelector('#img')
-        const rect = imgElement?.getBoundingClientRect()
-        const { top, left } = rect as DOMRect
-        const { pageX, pageY } = e.touches[0]
-        this.setState(
-            {
-                location: {
-                    x: pageX - left,
-                    y: pageY - top,
-                },
-            },
-            this.drawMagnifier
-        )
-    }
-    touchMoveHandler(e: React.TouchEvent) {
-        const imgElement = document.querySelector('#img')
         const rect = imgElement?.getBoundingClientRect() as DOMRect
         const { top, left } = rect
-        const { pageX, pageY } = e.touches[0]
+        let pageX = 0,
+            pageY = 0
+        if (isTouch(e)) {
+            pageX = e.touches[0].clientX
+            pageY = e.touches[0].clientY
+        } else {
+            pageX = e.clientX
+            pageY = e.clientY
+        }
         this.setState(
             {
                 location: { x: pageX - left, y: pageY - top },
@@ -184,7 +180,28 @@ export default class App extends React.Component<Props, State> {
             this.drawMagnifier
         )
     }
-    touchEndHandler(e: React.TouchEvent) {
+    touchMoveHandler(e: React.TouchEvent | React.MouseEvent) {
+        if(!this.state.showMagnifier)return 
+        const imgElement = document.querySelector('#img')
+        const rect = imgElement?.getBoundingClientRect() as DOMRect
+        const { top, left } = rect
+        let pageX = 0,
+            pageY = 0
+        if (isTouch(e)) {
+            pageX = e.touches[0].clientX
+            pageY = e.touches[0].clientY
+        } else {
+            pageX = e.clientX
+            pageY = e.clientY
+        }
+        this.setState(
+            {
+                location: { x: pageX - left, y: pageY - top },
+            },
+            this.drawMagnifier
+        )
+    }
+    touchEndHandler(e: React.TouchEvent | React.MouseEvent) {
         const imgElement = document.querySelector('#img') as HTMLCanvasElement
         const ctx = imgElement.getContext('2d') as CanvasRenderingContext2D
         const color = ctx.getImageData(
@@ -258,14 +275,26 @@ export default class App extends React.Component<Props, State> {
                 )}
                 <div className="picture" style={cardBackgroudStyle}>
                     {this.state.imgSrc ? (
-                        <canvas
-                            id="img"
-                            onTouchStart={this.touchStartHandler}
-                            onTouchMove={this.touchMoveHandler}
-                            onTouchEnd={this.touchEndHandler}
-                        >
-                            您的浏览器不支持canvas
-                        </canvas>
+                        isMobile() ? (
+                            <canvas
+                                id="img"
+                                onTouchStart={this.touchStartHandler}
+                                onTouchMove={this.touchMoveHandler}
+                                onTouchEnd={this.touchEndHandler}
+                            >
+                                {' '}
+                                您的浏览器不支持canvas
+                            </canvas>
+                        ) : (
+                            <canvas
+                                id="img"
+                                onMouseDown={this.touchStartHandler}
+                                onMouseMove={this.touchMoveHandler}
+                                onMouseUp={this.touchEndHandler}
+                            >
+                                您的浏览器不支持canvas
+                            </canvas>
+                        )
                     ) : (
                         <span>欢迎使用Neon</span>
                     )}
@@ -296,4 +325,10 @@ export default class App extends React.Component<Props, State> {
             </div>
         )
     }
+}
+
+function isTouch(
+    e: React.TouchEvent | React.MouseEvent
+): e is React.TouchEvent {
+    return e.nativeEvent instanceof TouchEvent
 }

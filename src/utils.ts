@@ -22,3 +22,7 @@ export function toHex(value: number[]): string  {
         return hex.length<2?`0${hex}`: hex })
     return `#${newValue.join('')}`
 }
+export function isMobile(): boolean{
+    const ua = navigator.userAgent
+    return /mobile|phone|android|pad/i.test(ua)
+}
