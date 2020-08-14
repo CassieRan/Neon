@@ -2,7 +2,7 @@ import React from 'react'
 import './App.css'
 /// <reference path="./type.d.ts" />
 import ColorThief from 'colorthief'
-import { copyToClipbord, toRgb, toHex, isMobile } from './utils'
+import { setClipbord, toRgb, toHex, isMobile } from './utils'
 import { drawGrid, drawCenter } from './canvas'
 import Loading from './components/Loading/index'
 import Toast from './components/Toast/index'
@@ -57,6 +57,7 @@ export default class App extends React.Component<Props, State> {
         this.choose = this.choose.bind(this)
         this.getPalette = this.getPalette.bind(this)
         this.clickPaletteItemHandler = this.clickPaletteItemHandler.bind(this)
+        this.setClipbord = this.setClipbord.bind(this)
         this.touchStartHandler = this.touchStartHandler.bind(this)
         this.touchMoveHandler = this.touchMoveHandler.bind(this)
         this.touchEndHandler = this.touchEndHandler.bind(this)
@@ -144,6 +145,12 @@ export default class App extends React.Component<Props, State> {
         drawCenter(ctx1, '#ff0000', App.ratio, App.ratio)
     }
     clickPaletteItemHandler(item: number[]) {
+        this.setState({
+            selectColor: item
+        })
+        
+    }
+    setClipbord(item: number[]) {
         let content: string
         switch (this.state.colorMode) {
             case ColorMode.RGB:
@@ -155,8 +162,9 @@ export default class App extends React.Component<Props, State> {
             default:
                 throw new Error('illegal color mode')
         }
-        copyToClipbord(content)
+        setClipbord(content)
         Toast(`已复制${content}到剪贴板`)
+
     }
     touchStartHandler(e: React.TouchEvent | React.MouseEvent) {
         // 点击图像出现放大镜
@@ -259,7 +267,7 @@ export default class App extends React.Component<Props, State> {
                 {this.state.selectColor && (
                     <div
                         className="select-color"
-                        onClick={this.clickPaletteItemHandler.bind(
+                        onClick={this.setClipbord.bind(
                             this,
                             this.state.selectColor
                         )}

@@ -1,7 +1,7 @@
 /*
  * 复制到剪贴板
 **/
-export function copyToClipbord(content: string): void {
+export function setClipbord(content: string): void {
     const inputElement = document.createElement('input');
     inputElement.setAttribute('readonly', 'readonly');
     inputElement.setAttribute('value', content);
